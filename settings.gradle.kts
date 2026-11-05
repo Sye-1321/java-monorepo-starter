@@ -1,6 +1,6 @@
 rootProject.name = "java-monorepo-starter"
 
-include("app", "core")
+include("apps:api", "apps:cli", "libs:core")
 
 dependencyResolutionManagement {
     repositories {
