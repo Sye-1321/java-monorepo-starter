@@ -1,6 +1,6 @@
 # Java monorepo starter
 
-A small Gradle multi-project Java application. The `core` library analyzes text, and the `app` command-line application reads a UTF-8 file and prints its line, word, and Unicode code-point counts.
+A small Gradle multi-project Java backend. The `libs/core` library analyzes text, `apps/cli` reads a UTF-8 file and prints its line, word, and Unicode code-point counts, and `apps/api` exposes the same analysis over HTTP.
 
 ## Requirements
 
@@ -23,7 +23,7 @@ On Windows:
 .\gradlew.bat build
 ```
 
-`build` compiles both projects, runs all tests, and creates the CLI distributions under `app/build/distributions`.
+`build` compiles all projects, runs all tests, creates the CLI distributions under `apps/cli/build/distributions`, and packages an executable API jar under `apps/api/build/libs`.
 
 To run only the tests, use `./gradlew test` or `.\gradlew.bat test`.
 
@@ -34,28 +34,40 @@ After creating a repository from the template:
 1. Set the project name in `settings.gradle.kts`.
 2. Move the Java sources and tests into directories matching your package names, then update their `package` declarations and imports.
 3. Rename `Main.java` and `MainTest.java` if desired, keeping each filename aligned with its class name.
-4. In `app/build.gradle.kts`, set `application.mainClass` to the fully qualified entry-point class and set `application.applicationName` to the desired executable name.
+4. In `apps/cli/build.gradle.kts`, set `application.mainClass` to the fully qualified entry-point class and set `application.applicationName` to the desired executable name.
 5. Update the executable name in the usage message in the entry-point class and in the commands below.
 
 Run `./gradlew clean build` (or `.\gradlew.bat clean build` on Windows) after renaming to catch stale package, class, and path references.
 
 ## Run
 
+Run the API:
+
+```shell
+./gradlew :apps:api:bootRun
+```
+
+Then submit text for analysis:
+
+```shell
+curl -X POST http://localhost:8080/api/v1/analyses -H "Content-Type: application/json" -d '{"text":"Hello world"}'
+```
+
 Run the CLI directly through Gradle:
 
 ```shell
-./gradlew :app:run --args="../README.md"
+./gradlew :apps:cli:run --args="../../README.md"
 ```
 
-On Windows, replace `./gradlew` with `.\gradlew.bat`. Relative arguments passed to `:app:run` are resolved from the `app` project directory; use an absolute path or prefix a repository-root path with `../`.
+On Windows, replace `./gradlew` with `.\gradlew.bat`. Relative arguments passed to `:apps:cli:run` are resolved from the `apps/cli` project directory; use an absolute path or prefix a repository-root path with `../../`.
 
 To install a local runnable distribution:
 
 ```shell
-./gradlew :app:installDist
-./app/build/install/text-analyzer/bin/text-analyzer path/to/file.txt
+./gradlew :apps:cli:installDist
+./apps/cli/build/install/text-analyzer/bin/text-analyzer path/to/file.txt
 ```
 
-The installed Windows launcher is `app\build\install\text-analyzer\bin\text-analyzer.bat`.
+The installed Windows launcher is `apps\cli\build\install\text-analyzer\bin\text-analyzer.bat`.
 
-The `app` project has a Gradle project dependency on `core`; all counting behavior lives in `core` and is reused by the CLI.
+Both applications have a Gradle project dependency on `libs/core`; all counting behavior lives in `libs/core` and is reused by the API and CLI. The core library has no Spring dependencies.
