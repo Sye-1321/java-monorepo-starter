@@ -5,6 +5,7 @@ A small Gradle multi-project Java backend. The `libs/core` library analyzes text
 ## Requirements
 
 - Java 21 or newer
+- Docker for PostgreSQL and integration tests
 - No separate Gradle installation; the included Gradle 9.8.2 wrapper is used
 
 The build produces Java 21-compatible bytecode even when run with a newer JDK.
@@ -41,16 +42,36 @@ Run `./gradlew clean build` (or `.\gradlew.bat clean build` on Windows) after re
 
 ## Run
 
-Run the API:
+Start PostgreSQL with a local password:
 
 ```shell
+export POSTGRES_PASSWORD=local-password
+docker compose up -d
+```
+
+On PowerShell, set the password with `$env:POSTGRES_PASSWORD = "local-password"` before running `docker compose up -d`.
+
+Configure and run the API:
+
+```shell
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/analyses
+export SPRING_DATASOURCE_USERNAME=analyses
+export SPRING_DATASOURCE_PASSWORD="$POSTGRES_PASSWORD"
 ./gradlew :apps:api:bootRun
 ```
+
+On PowerShell, set the equivalent `SPRING_DATASOURCE_*` environment variables and use `.\gradlew.bat`. Flyway applies the database migration when the API starts.
 
 Then submit text for analysis:
 
 ```shell
-curl -X POST http://localhost:8080/api/v1/analyses -H "Content-Type: application/json" -d '{"text":"Hello world"}'
+curl -i -X POST http://localhost:8080/api/v1/analyses -H "Content-Type: application/json" -d '{"text":"Hello world"}'
+```
+
+Retrieve the stored analysis using the UUID from the response or `Location` header:
+
+```shell
+curl http://localhost:8080/api/v1/analyses/<analysis-id>
 ```
 
 Run the CLI directly through Gradle:
