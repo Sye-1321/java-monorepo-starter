@@ -74,6 +74,12 @@ Retrieve the stored analysis using the UUID from the response or `Location` head
 curl http://localhost:8080/api/v1/analyses/<analysis-id>
 ```
 
+List analyses in pages of 20, or set `size` up to 100 and pass the returned `nextCursor` to retrieve the next page:
+
+```shell
+curl "http://localhost:8080/api/v1/analyses?size=20&cursor=<next-cursor>"
+```
+
 Run the CLI directly through Gradle:
 
 ```shell

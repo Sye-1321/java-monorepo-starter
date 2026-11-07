@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -41,6 +43,24 @@ class AnalysisRepository {
                 .optional();
     }
 
+    List<StoredAnalysis> findAll(AnalysisCursor cursor, int limit) {
+        if (cursor == null) {
+            return jdbcClient.sql("SELECT " + COLUMNS
+                            + " FROM analyses ORDER BY created_at DESC, id DESC LIMIT :limit")
+                    .param("limit", limit)
+                    .query(AnalysisRepository::mapRow)
+                    .list();
+        }
+        return jdbcClient.sql("SELECT " + COLUMNS + " FROM analyses "
+                        + "WHERE (created_at, id) < (:createdAt, :id) "
+                        + "ORDER BY created_at DESC, id DESC LIMIT :limit")
+                .param("createdAt", cursor.createdAt().atOffset(ZoneOffset.UTC))
+                .param("id", cursor.id())
+                .param("limit", limit)
+                .query(AnalysisRepository::mapRow)
+                .list();
+    }
+
     private static StoredAnalysis mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
         return new StoredAnalysis(
                 resultSet.getObject("id", UUID.class),
@@ -52,4 +72,7 @@ class AnalysisRepository {
 }
 
 record StoredAnalysis(UUID id, long lines, long words, long codePoints, Instant createdAt) {
+}
+
+record AnalysisCursor(Instant createdAt, UUID id) {
 }
