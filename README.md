@@ -45,7 +45,8 @@ Run `./gradlew clean build` (or `.\gradlew.bat clean build` on Windows) after re
 Start PostgreSQL with a local password:
 
 ```shell
-POSTGRES_PASSWORD=local-password docker compose up -d
+export POSTGRES_PASSWORD=local-password
+docker compose up -d
 ```
 
 On PowerShell, set the password with `$env:POSTGRES_PASSWORD = "local-password"` before running `docker compose up -d`.
