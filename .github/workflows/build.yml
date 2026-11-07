@@ -24,6 +24,6 @@ jobs:
       - name: Build and test
         if: runner.os != 'Windows'
         run: ./gradlew build --warning-mode all
-      - name: Build and test
+      - name: Build Windows artifacts and non-database tests
         if: runner.os == 'Windows'
-        run: .\gradlew.bat build --warning-mode all
+        run: .\gradlew.bat :libs:core:build :apps:cli:build :apps:api:assemble :apps:api:compileTestJava --warning-mode all
